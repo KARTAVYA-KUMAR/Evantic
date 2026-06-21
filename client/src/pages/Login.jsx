@@ -44,17 +44,17 @@ const Login = () => {
         <VideoPageBackground>
             <div className="max-w-md mx-auto mt-20 shader-card p-8 rounded-xl">
                 <div className="text-center mb-8">
-                    <h2 className="text-3xl font-extrabold text-black mb-2">Welcome Back</h2>
-                    <p className="text-gray-600">Sign in to your Evantic account</p>
+                    <h2 className="text-3xl font-extrabold text-white mb-2">Welcome Back</h2>
+                    <p className="text-white/60">Sign in to your Evantic account</p>
                 </div>
 
-                {error && <div className="bg-gray-100 text-black p-3 rounded-lg mb-6 text-center shadow-inner border border-gray-300">{error}</div>}
+                {error && <div className="bg-red-500/25 text-red-200 p-3 rounded-lg mb-6 text-center shadow-inner border border-red-500/30">{error}</div>}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {!showOTP ? (
                         <>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-800 mb-2">Email Address</label>
+                                <label className="block text-sm font-semibold text-white/80 mb-2">Email Address</label>
                                 <input
                                     type="email"
                                     required
@@ -64,7 +64,7 @@ const Login = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-800 mb-2">Password</label>
+                                <label className="block text-sm font-semibold text-white/80 mb-2">Password</label>
                                 <input
                                     type="password"
                                     required
@@ -76,7 +76,7 @@ const Login = () => {
                         </>
                     ) : (
                         <div>
-                            <label className="block text-sm font-semibold text-gray-800 mb-2">Verification Code (OTP)</label>
+                            <label className="block text-sm font-semibold text-white/80 mb-2">Verification Code (OTP)</label>
                             <input
                                 type="text"
                                 required
@@ -97,8 +97,8 @@ const Login = () => {
                     </button>
                 </form>
 
-                <p className="text-center mt-8 text-gray-700">
-                    Don't have an account? <Link to="/register" className="text-black font-bold hover:underline">Sign up</Link>
+                <p className="text-center mt-8 text-white/70">
+                    Don't have an account? <Link to="/register" className="text-white font-bold hover:underline">Sign up</Link>
                 </p>
             </div>
         </VideoPageBackground>

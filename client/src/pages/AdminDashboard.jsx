@@ -183,12 +183,12 @@ const AdminDashboard = () => {
                         <ul className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
                             {bookings.length === 0 ? <li className="p-6 text-gray-600 text-center">No bookings yet.</li> :
                                 bookings.map(booking => (
-                                    <li key={booking._id} className={`p-6 hover:bg-gray-50 transition border-l-4 ${booking.status === 'pending' ? 'border-l-gray-400' : booking.status === 'confirmed' ? 'border-l-gray-400' : 'border-l-gray-400'}`}>
+                                    <li key={booking._id} className={`p-6 hover:bg-gray-50 transition border-l-4 ${booking.status === 'confirmed' ? 'border-l-green-500' : booking.status === 'cancelled' ? 'border-l-red-500' : 'border-l-yellow-500'}`}>
                                         <div className="flex justify-between items-start mb-3">
                                             <h4 className="font-bold text-gray-900 text-lg leading-tight">{booking.eventId?.title || 'Deleted Event'}</h4>
                                             <div className="flex flex-col gap-1 items-end shrink-0 ml-4">
-                                                <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.status === 'confirmed' ? 'bg-gray-100 text-gray-700' : booking.status === 'cancelled' ? 'bg-gray-100 text-gray-700' : 'bg-gray-100 text-gray-700'}`}>{booking.status}</span>
-                                                {booking.status !== 'cancelled' && <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.paymentStatus === 'paid' ? 'bg-gray-100 text-gray-700' : 'bg-gray-200 text-gray-800'}`}>{booking.paymentStatus.replace('_', ' ')}</span>}
+                                                <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : booking.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>{booking.status}</span>
+                                                {booking.status !== 'cancelled' && <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{booking.paymentStatus.replace('_', ' ')}</span>}
                                             </div>
                                         </div>
                                         <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-100 text-sm">
@@ -216,13 +216,13 @@ const AdminDashboard = () => {
                                         {/* Action buttons for admin */}
                                         {booking.status === 'pending' && (
                                             <div className="flex flex-wrap gap-2 mt-2">
-                                                <button onClick={() => handleConfirmBooking(booking._id, 'paid')} className="flex-1 min-w-[120px] bg-gray-50 text-gray-700 hover:bg-gray-600 hover:text-white border border-gray-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
+                                                <button onClick={() => handleConfirmBooking(booking._id, 'paid')} className="flex-1 min-w-[120px] bg-green-50 text-green-700 hover:bg-green-600 hover:text-white border border-green-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
                                                     ✓ Approve as Paid
                                                 </button>
-                                                <button onClick={() => handleConfirmBooking(booking._id, 'not_paid')} className="flex-1 min-w-[120px] bg-gray-50 text-gray-700 hover:bg-gray-800 hover:text-white border border-gray-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
+                                                <button onClick={() => handleConfirmBooking(booking._id, 'not_paid')} className="flex-1 min-w-[120px] bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
                                                     ✓ Approve Undecided
                                                 </button>
-                                                <button onClick={() => handleCancelBooking(booking._id)} className="w-[80px] bg-gray-50 text-gray-600 hover:bg-gray-500 hover:text-white border border-gray-200 text-xs font-bold py-2.5 px-3 rounded-lg transition">
+                                                <button onClick={() => handleCancelBooking(booking._id)} className="w-[80px] bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 text-xs font-bold py-2.5 px-3 rounded-lg transition">
                                                     ✕ Reject
                                                 </button>
                                             </div>

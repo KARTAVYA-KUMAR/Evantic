@@ -13,23 +13,23 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="bg-black/95 backdrop-blur-md shadow-lg shadow-black/20 border-b border-white/10 sticky top-0 z-50">
-            <div className="container mx-auto px-4">
-                <div className="flex flex-col md:flex-row justify-between items-center py-4 gap-4">
-                    <Link to="/" className="text-white text-2xl font-bold flex items-center gap-2 font-display tracking-tight">
-                        <FaTicketAlt className="text-white" /> Evantic
+        <nav className="bg-gradient-to-b from-black/80 via-black/40 to-transparent backdrop-blur-md sticky top-0 z-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between items-center h-16 md:h-20">
+                    <Link to="/" className="text-white text-3xl md:text-4xl font-league-gothic tracking-widest hover:opacity-90 transition">
+                        EVANTIC
                     </Link>
-                    <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-                        <Link to="/" className="text-gray-300 hover:text-white transition cursor-pointer">Events</Link>
+                    <div className="flex items-center gap-6 md:gap-8 font-league-gothic text-xl md:text-3xl tracking-wider">
+                        <Link to="/" className="text-white/80 hover:text-white transition">Events</Link>
                         {user ? (
                             <>
-                                <Link to={user.role === 'admin' ? '/admin' : '/dashboard'} className="text-gray-300 hover:text-white transition">Dashboard</Link>
-                                <button onClick={handleLogout} className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md transition border border-white/15">Logout</button>
+                                <Link to={user.role === 'admin' ? '/admin' : '/dashboard'} className="text-white/80 hover:text-white transition">Dashboard</Link>
+                                <button onClick={handleLogout} className="text-white/80 hover:text-white transition font-league-gothic text-2xl md:text-3.5xl tracking-wider">logout</button>
                             </>
                         ) : (
                             <>
-                                <Link to="/login" className="text-gray-300 hover:text-white transition">Login</Link>
-                                <Link to="/register" className="bg-white hover:bg-gray-200 text-black px-4 py-2 rounded-md font-semibold transition shadow-md shadow-black/20">Sign Up</Link>
+                                <Link to="/login" className="text-white/80 hover:text-white transition">login</Link>
+                                <Link to="/register" className="text-white/80 hover:text-white transition">signup</Link>
                             </>
                         )}
                     </div>

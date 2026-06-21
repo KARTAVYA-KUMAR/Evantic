@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://evantic-1.onrender.com/api',
+    baseURL: import.meta.env.MODE === 'development'
+        ? 'http://localhost:5001/api'
+        : 'https://evantic-1.onrender.com/api',
 });
 
 api.interceptors.request.use((config) => {

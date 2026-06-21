@@ -3,6 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import api from '../utils/axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaTicketAlt, FaTimesCircle } from 'react-icons/fa';
+import VideoPageBackground from '../components/VideoPageBackground';
 
 const UserDashboard = () => {
     const { user } = useContext(AuthContext);
@@ -40,92 +41,94 @@ const UserDashboard = () => {
         }
     };
 
-    if (loading) return <div className="text-center py-20 text-xl font-semibold">Loading dashboard...</div>;
+    if (loading) return <div className="text-center py-20 text-xl font-semibold text-white">Loading dashboard...</div>;
 
     return (
-        <div className="max-w-6xl mx-auto">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm p-6 sm:p-8 mb-8 border border-gray-200 flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6">
-                <div className="w-20 h-20 bg-gray-200 text-black rounded-full flex items-center justify-center text-3xl font-bold uppercase tracking-widest shrink-0">
-                    {user?.name.charAt(0)}
-                </div>
-                <div className="flex flex-col items-center sm:items-start">
-                    <h1 className="text-2xl sm:text-3xl font-extrabold text-black mb-2">Welcome, {user?.name}!</h1>
-                    <p className="text-gray-600 flex items-center justify-center sm:justify-start gap-2">
-                        <span className="w-2 h-2 rounded-full bg-gray-500"></span> User Dashboard
-                    </p>
-                </div>
-            </div>
-
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2 sm:gap-3">
-                    <FaTicketAlt className="text-black" /> My Bookings requests
-                </h2>
-            </div>
-
-            {bookings.length === 0 ? (
-                <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm p-12 text-center border border-gray-200">
-                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FaTicketAlt className="text-gray-500 text-3xl" />
+        <VideoPageBackground>
+            <div className="max-w-6xl mx-auto pt-8 px-4">
+                <div className="event-glass-card rounded-2xl p-6 sm:p-8 mb-8 flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6">
+                    <div className="w-20 h-20 bg-white/15 text-white rounded-full flex items-center justify-center text-3xl font-bold uppercase tracking-widest shrink-0">
+                        {user?.name.charAt(0)}
                     </div>
-                    <p className="text-xl text-gray-600 mb-6 mt-4 font-medium">You haven't booked any events yet.</p>
-                    <Link to="/" className="inline-block bg-black hover:bg-gray-800 text-white font-bold py-3 px-8 rounded-lg transition shadow-md">
-                        Browse Events
-                    </Link>
+                    <div className="flex flex-col items-center sm:items-start">
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-2">Welcome, {user?.name}!</h1>
+                        <p className="text-white/60 flex items-center justify-center sm:justify-start gap-2">
+                            <span className="w-2 h-2 rounded-full bg-white/50"></span> User Dashboard
+                        </p>
+                    </div>
                 </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {bookings.map((booking) => (
-                        <div key={booking._id} className="bg-white/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-sm hover:shadow-md transition border border-gray-200 flex flex-col">
-                            <div className="p-6 border-b border-gray-100 flex-grow">
-                                {booking.eventId ? (
-                                    <>
-                                        <div className="flex justify-between items-start mb-4">
-                                            <h3 className="text-lg font-bold text-black leading-tight">{booking.eventId.title}</h3>
-                                            <div className="flex flex-col gap-1 items-end">
-                                                <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.status === 'confirmed' ? 'bg-gray-900 text-white' :
-                                                    booking.status === 'cancelled' ? 'bg-gray-200 text-gray-700' :
-                                                        'bg-gray-100 text-black'
-                                                    }`}>
-                                                    {booking.status}
-                                                </span>
-                                                {booking.status !== 'cancelled' && (
-                                                    <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.paymentStatus === 'paid' ? 'bg-black text-white' : 'bg-gray-100 text-gray-700'
-                                                        }`}>
-                                                        {booking.paymentStatus.replace('_', ' ')}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="text-sm text-gray-600 mb-4 space-y-1">
-                                            <p><strong className="text-gray-800">Date:</strong> {new Date(booking.eventId.date).toLocaleDateString()}</p>
-                                            <p><strong className="text-gray-800">Amount:</strong> {booking.amount === 0 ? 'Free' : `₹${booking.amount}`}</p>
-                                            <p><strong className="text-gray-800">Requested:</strong> {new Date(booking.bookedAt).toLocaleDateString()}</p>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <p className="text-gray-600 italic">Event details unavailable (might have been deleted)</p>
-                                )}
-                            </div>
-                            <div className="p-4 bg-gray-100 flex justify-between items-center shrink-0">
-                                {booking.eventId && booking.status !== 'cancelled' ? (
-                                    <>
-                                        <Link to={`/events/${booking.eventId._id}`} className="text-black font-semibold text-sm hover:underline">View Event</Link>
-                                        <button
-                                            onClick={() => cancelBooking(booking._id)}
-                                            className="text-gray-700 font-semibold text-sm hover:text-black transition flex items-center gap-1"
-                                        >
-                                            <FaTimesCircle /> Cancel
-                                        </button>
-                                    </>
-                                ) : (
-                                    <div className="w-full text-center text-sm text-gray-600 italic">Booking Cancelled</div>
-                                )}
-                            </div>
+
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2 sm:gap-3">
+                        <FaTicketAlt className="text-white" /> My Bookings requests
+                    </h2>
+                </div>
+
+                {bookings.length === 0 ? (
+                    <div className="event-glass-card rounded-xl p-12 text-center">
+                        <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <FaTicketAlt className="text-white/60 text-3xl" />
                         </div>
-                    ))}
-                </div>
-            )}
-        </div>
+                        <p className="text-xl text-white/70 mb-6 mt-4 font-medium">You haven't booked any events yet.</p>
+                        <Link to="/" className="btn-ocean font-bold py-3 px-8 rounded-lg transition">
+                            Browse Events
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {bookings.map((booking) => (
+                            <div key={booking._id} className="event-glass-card rounded-xl overflow-hidden flex flex-col">
+                                <div className="p-6 border-b border-white/10 flex-grow">
+                                    {booking.eventId ? (
+                                        <>
+                                            <div className="flex justify-between items-start mb-4">
+                                                <h3 className="text-lg font-bold text-white leading-tight">{booking.eventId.title}</h3>
+                                                <div className="flex flex-col gap-1 items-end">
+                                                    <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.status === 'confirmed' ? 'bg-white text-black' :
+                                                        booking.status === 'cancelled' ? 'bg-white/10 text-white/50' :
+                                                            'bg-white/20 text-white/90'
+                                                        }`}>
+                                                        {booking.status}
+                                                    </span>
+                                                    {booking.status !== 'cancelled' && (
+                                                        <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.paymentStatus === 'paid' ? 'bg-white text-black' : 'bg-white/10 text-white/80'
+                                                            }`}>
+                                                            {booking.paymentStatus.replace('_', ' ')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="text-sm text-white/75 mb-4 space-y-1">
+                                                <p><strong className="text-white/90">Date:</strong> {new Date(booking.eventId.date).toLocaleDateString()}</p>
+                                                <p><strong className="text-white/90">Amount:</strong> {booking.amount === 0 ? 'Free' : `₹${booking.amount}`}</p>
+                                                <p><strong className="text-white/90">Requested:</strong> {new Date(booking.bookedAt).toLocaleDateString()}</p>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <p className="text-white/60 italic">Event details unavailable (might have been deleted)</p>
+                                    )}
+                                </div>
+                                <div className="p-4 bg-black/40 flex justify-between items-center shrink-0">
+                                    {booking.eventId && booking.status !== 'cancelled' ? (
+                                        <>
+                                            <Link to={`/events/${booking.eventId._id}`} className="text-white font-semibold text-sm hover:underline">View Event</Link>
+                                            <button
+                                                onClick={() => cancelBooking(booking._id)}
+                                                className="text-white/70 font-semibold text-sm hover:text-white transition flex items-center gap-1"
+                                            >
+                                                <FaTimesCircle /> Cancel
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <div className="w-full text-center text-sm text-white/50 italic">Booking Cancelled</div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </VideoPageBackground>
     );
 };
 

@@ -10,7 +10,9 @@ exports.sendBookingOTP = async (req, res) => {
         const otp = generateOTP();
         await OTP.findOneAndDelete({ email: req.user.email, action: 'event_booking' });
         await OTP.create({ email: req.user.email, otp, action: 'event_booking' });
-        await sendOTPEmail(req.user.email, otp, 'event_booking');
+        sendOTPEmail(req.user.email, otp, 'event_booking').catch(err => {
+            console.error('Background OTP email sending error:', err);
+        });
         res.json({ message: 'OTP sent successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Error sending OTP', error: error.message });
@@ -74,8 +76,10 @@ exports.confirmBooking = async (req, res) => {
         event.availableSeats -= 1;
         await event.save();
 
-        // Send email on admin confirmation
-        await sendBookingEmail(booking.userId.email, booking.userId.name, booking.eventId.title);
+        // Send email on admin confirmation (non-blocking)
+        sendBookingEmail(booking.userId.email, booking.userId.name, booking.eventId.title).catch(err => {
+            console.error('Background booking confirmation email sending error:', err);
+        });
 
         res.json({ message: 'Booking confirmed successfully', booking });
     } catch (error) {
