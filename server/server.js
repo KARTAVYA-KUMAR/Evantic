@@ -20,6 +20,21 @@ app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes);
 
+app.post('/api/test-email', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Email is required' });
+        
+        const { sendOTPEmail } = require('./utils/email');
+        console.log('Sending test OTP email to:', email);
+        await sendOTPEmail(email, '999999', 'account_verification');
+        res.json({ message: 'Test email execution requested. Check console/Render logs for success or detailed SMTP error.' });
+    } catch (err) {
+        console.error('Test email route failed:', err);
+        res.status(500).json({ error: err.message, stack: err.stack });
+    }
+});
+
 // Database Connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/eventora')
   .then(() => console.log('MongoDB Connected'))

@@ -3,19 +3,41 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+// Secure startup logs for environment variables
+console.log('--- Mailer Config Diagnostic ---');
+console.log('EMAIL_USER is set:', !!process.env.EMAIL_USER);
+if (process.env.EMAIL_USER) {
+    console.log('EMAIL_USER length:', process.env.EMAIL_USER.length);
+}
+console.log('EMAIL_PASS is set:', !!process.env.EMAIL_PASS);
+if (process.env.EMAIL_PASS) {
+    console.log('EMAIL_PASS length:', process.env.EMAIL_PASS.length);
+}
+
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,   // 10 seconds
+    socketTimeout: 10000,     // 10 seconds
     tls: {
         rejectUnauthorized: false
     },
     debug: true,
     logger: true
+});
+
+// Log safe transporter config keys
+console.log('Transporter service initialized: "gmail"');
+console.log('Transporter Options:', {
+    service: 'gmail',
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
+    tlsRejectUnauthorized: false
 });
 
 // Verify connection configuration
