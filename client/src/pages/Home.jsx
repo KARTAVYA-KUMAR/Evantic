@@ -92,7 +92,7 @@ const Home = () => {
                     playsInline
                     preload="auto"
                 >
-                    <source src="/boat2.mp4" type="video/mp4" />
+                    <source src="/hboat.mp4" type="video/mp4" />
                 </video>
             </div>
 

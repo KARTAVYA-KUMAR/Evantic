@@ -12,7 +12,7 @@ const VideoPageBackground = ({ children }) => {
                 preload="auto"
                 aria-hidden="true"
             >
-                <source src="/comshader.mp4" type="video/mp4" />
+                <source src="/shader.mp4" type="video/mp4" />
             </video>
             <div className="relative z-10">{children}</div>
         </div>
