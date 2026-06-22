@@ -1,70 +1,43 @@
-const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Secure startup logs for environment variables
 console.log('--- Mailer Config Diagnostic ---');
-console.log('EMAIL_USER is set:', !!process.env.EMAIL_USER);
-if (process.env.EMAIL_USER) {
-    console.log('EMAIL_USER length:', process.env.EMAIL_USER.length);
+console.log('RESEND_API_KEY is set:', !!process.env.RESEND_API_KEY);
+if (process.env.RESEND_API_KEY) {
+    console.log('RESEND_API_KEY length:', process.env.RESEND_API_KEY.length);
 }
-console.log('EMAIL_PASS is set:', !!process.env.EMAIL_PASS);
-if (process.env.EMAIL_PASS) {
-    console.log('EMAIL_PASS length:', process.env.EMAIL_PASS.length);
-}
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,   // 10 seconds
-    socketTimeout: 10000,     // 10 seconds
-    tls: {
-        rejectUnauthorized: false
-    },
-    debug: true,
-    logger: true
-});
-
-// Log safe transporter config keys
-console.log('Transporter service initialized: "gmail"');
-console.log('Transporter Options:', {
-    service: 'gmail',
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-    tlsRejectUnauthorized: false
-});
-
-// Verify connection configuration
-transporter.verify((error, success) => {
-    if (error) {
-        console.error('SMTP Transporter verification failed:', error);
-    } else {
-        console.log('SMTP Server is ready to send emails');
-    }
-});
 
 const sendBookingEmail = async (userEmail, userName, eventTitle) => {
     try {
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: userEmail,
-            subject: `Booking Confirmed: ${eventTitle}`,
-            html: `
-        <h2>Hi ${userName}!</h2>
-        <p>Your booking for the event <strong>${eventTitle}</strong> is successfully confirmed.</p>
-        <p>Thank you for choosing Eventora.</p>
-      `
-        };
-        await transporter.sendMail(mailOptions);
-        console.log('Email sent successfully to', userEmail);
+        const htmlContent = `
+            <h2>Hi ${userName}!</h2>
+            <p>Your booking for the event <strong>${eventTitle}</strong> is successfully confirmed.</p>
+            <p>Thank you for choosing Eventora.</p>
+        `;
+
+        const response = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                from: 'onboarding@resend.dev',
+                to: userEmail,
+                subject: `Booking Confirmed: ${eventTitle}`,
+                html: htmlContent
+            })
+        });
+
+        const resData = await response.json();
+        if (response.ok) {
+            console.log(`Resend: Booking email sent successfully to ${userEmail}, ID: ${resData.id}`);
+        } else {
+            console.error('Resend API Error details:', resData);
+        }
     } catch (error) {
-        console.error('Error sending email:', error);
+        console.error('Error sending booking email with Resend:', error);
     }
 };
 
@@ -75,25 +48,39 @@ const sendOTPEmail = async (userEmail, otp, type) => {
             ? 'Please use the following OTP to verify your new Eventora account.'
             : 'Please use the following OTP to verify and confirm your event booking.';
 
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: userEmail,
-            subject: title,
-            html: `
-                <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
-                    <h2 style="color: #111;">${title}</h2>
-                    <p style="color: #555; font-size: 16px;">${msg}</p>
-                    <div style="margin: 20px auto; padding: 15px; font-size: 24px; font-weight: bold; background: #f4f4f4; width: max-content; letter-spacing: 5px;">
-                        ${otp}
-                    </div>
-                    <p style="color: #999; font-size: 12px;">This code expires in 5 minutes. If you didn't request this, please ignore this email.</p>
+        const htmlContent = `
+            <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+                <h2 style="color: #111;">${title}</h2>
+                <p style="color: #555; font-size: 16px;">${msg}</p>
+                <div style="margin: 20px auto; padding: 15px; font-size: 24px; font-weight: bold; background: #f4f4f4; width: max-content; letter-spacing: 5px;">
+                    ${otp}
                 </div>
-            `
-        };
-        await transporter.sendMail(mailOptions);
-        console.log(`OTP sent to ${userEmail} for ${type}`);
+                <p style="color: #999; font-size: 12px;">This code expires in 5 minutes. If you didn't request this, please ignore this email.</p>
+            </div>
+        `;
+
+        const response = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                from: 'onboarding@resend.dev',
+                to: userEmail,
+                subject: title,
+                html: htmlContent
+            })
+        });
+
+        const resData = await response.json();
+        if (response.ok) {
+            console.log(`Resend: OTP sent successfully to ${userEmail}, ID: ${resData.id}`);
+        } else {
+            console.error('Resend API Error details:', resData);
+        }
     } catch (error) {
-        console.error('Error sending OTP email:', error);
+        console.error('Error sending OTP email with Resend:', error);
     }
 };
 
