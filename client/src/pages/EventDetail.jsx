@@ -46,11 +46,57 @@ const EventDetail = () => {
                 setShowOTP(true);
                 setSuccessMsg('OTP sent to your email. Please verify to confirm booking.');
             } else {
-                await api.post('/bookings', { eventId: event._id, otp });
-                setSuccessMsg('Booking requested! Awaiting admin confirmation.');
+                const { data } = await api.post('/bookings', { eventId: event._id, otp });
                 setShowOTP(false);
-                // Update local seats count dynamically after booking
-                setEvent({ ...event, availableSeats: event.availableSeats - 1 });
+                setOtp('');
+
+                if (data.isFree) {
+                    setEvent({ ...event, availableSeats: event.availableSeats - 1 });
+                    navigate('/payment-success');
+                } else {
+                    const { booking, razorpayOrder } = data;
+                    const options = {
+                        key: 'rzp_test_TJFxxT9qjBXFEu',
+                        amount: razorpayOrder.amount,
+                        currency: razorpayOrder.currency,
+                        name: 'Evantic',
+                        description: `Booking for ${event.title}`,
+                        order_id: razorpayOrder.id,
+                        handler: async (response) => {
+                            try {
+                                setBookingLoading(true);
+                                await api.post('/bookings/verify', {
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    bookingId: booking._id
+                                });
+                                setEvent(prev => ({ ...prev, availableSeats: prev.availableSeats - 1 }));
+                                navigate('/payment-success');
+                            } catch (verifyErr) {
+                                setError(verifyErr.response?.data?.message || 'Payment verification failed');
+                                navigate('/payment-failed');
+                            } finally {
+                                setBookingLoading(false);
+                            }
+                        },
+                        prefill: {
+                            name: user.name,
+                            email: user.email
+                        },
+                        theme: {
+                            color: '#000000'
+                        },
+                        modal: {
+                            ondismiss: () => {
+                                setBookingLoading(false);
+                                setError('Payment was cancelled by the user.');
+                            }
+                        }
+                    };
+                    const rzp = new window.Razorpay(options);
+                    rzp.open();
+                }
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Booking failed');

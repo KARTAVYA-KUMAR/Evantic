@@ -2,6 +2,12 @@ const Booking = require('../models/Booking');
 const Event = require('../models/Event');
 const OTP = require('../models/OTP');
 const { sendBookingEmail, sendOTPEmail } = require('../utils/email');
+const Razorpay = require('razorpay');
+
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_TJFxxT9qjBXFEu',
+    key_secret: process.env.RAZORPAY_KEY_SECRET || 'CoaBOSXlZgzNmlt4ftHYMrHL'
+});
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -38,6 +44,29 @@ exports.bookEvent = async (req, res) => {
             return res.status(400).json({ message: 'Already booked or pending' });
         }
 
+        await OTP.deleteOne({ _id: validOTP._id }); // cleanup OTP on verification success
+
+        if (event.ticketPrice === 0) {
+            // Free event: book instantly
+            const booking = await Booking.create({
+                userId: req.user.id,
+                eventId,
+                status: 'confirmed',
+                paymentStatus: 'paid',
+                amount: 0
+            });
+
+            event.availableSeats -= 1;
+            await event.save();
+
+            sendBookingEmail(req.user.email, req.user.name, event.title).catch(err => {
+                console.error('Background booking confirmation email sending error:', err);
+            });
+
+            return res.status(201).json({ message: 'Booking confirmed successfully', booking, isFree: true });
+        }
+
+        // Paid event: create pending booking and initialize Razorpay order
         const booking = await Booking.create({
             userId: req.user.id,
             eventId,
@@ -46,13 +75,72 @@ exports.bookEvent = async (req, res) => {
             amount: event.ticketPrice
         });
 
-        await OTP.deleteOne({ _id: validOTP._id }); // cleanup
+        const options = {
+            amount: event.ticketPrice * 100, // in paise
+            currency: 'INR',
+            receipt: `receipt_${booking._id}`
+        };
 
-        res.status(201).json({ message: 'Booking request submitted', booking });
+        const razorpayOrder = await razorpay.orders.create(options);
+
+        res.status(201).json({
+            message: 'Booking request submitted',
+            booking,
+            razorpayOrder: {
+                id: razorpayOrder.id,
+                amount: razorpayOrder.amount,
+                currency: razorpayOrder.currency
+            },
+            isFree: false
+        });
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
+
+exports.verifyPayment = async (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId } = req.body;
+
+        const crypto = require('crypto');
+        const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'CoaBOSXlZgzNmlt4ftHYMrHL');
+        hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
+        const generated_signature = hmac.digest('hex');
+
+        if (generated_signature !== razorpay_signature) {
+            return res.status(400).json({ message: 'Invalid payment signature' });
+        }
+
+        const booking = await Booking.findById(bookingId).populate('userId').populate('eventId');
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+        if (booking.status === 'confirmed') {
+            return res.json({ message: 'Booking already confirmed', booking });
+        }
+
+        const event = await Event.findById(booking.eventId._id);
+        if (!event) return res.status(404).json({ message: 'Event not found' });
+        if (event.availableSeats <= 0) {
+            return res.status(400).json({ message: 'No seats available' });
+        }
+
+        booking.status = 'confirmed';
+        booking.paymentStatus = 'paid';
+        await booking.save();
+
+        event.availableSeats -= 1;
+        await event.save();
+
+        sendBookingEmail(booking.userId.email, booking.userId.name, booking.eventId.title).catch(err => {
+            console.error('Background booking confirmation email sending error:', err);
+        });
+
+        res.json({ message: 'Payment verified and booking confirmed successfully', booking });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
 
 exports.confirmBooking = async (req, res) => {
     try {

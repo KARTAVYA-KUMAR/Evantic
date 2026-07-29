@@ -88,7 +88,7 @@ const AdminDashboard = () => {
             <div className="bg-gradient-to-r from-gray-900 to-gray-700 text-white rounded-2xl p-6 sm:p-8 mb-8 shadow-lg shadow-gray-900/25 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
                 <div>
                     <h1 className="text-2xl sm:text-3xl font-extrabold mb-2">Admin Dashboard</h1>
-                    <p className="text-gray-100">Manage events and manually confirm bookings.</p>
+                    <p className="text-gray-100">Manage events and view bookings.</p>
                 </div>
                 <button
                     onClick={() => setShowEventForm(!showEventForm)}
@@ -216,14 +216,8 @@ const AdminDashboard = () => {
                                         {/* Action buttons for admin */}
                                         {booking.status === 'pending' && (
                                             <div className="flex flex-wrap gap-2 mt-2">
-                                                <button onClick={() => handleConfirmBooking(booking._id, 'paid')} className="flex-1 min-w-[120px] bg-green-50 text-green-700 hover:bg-green-600 hover:text-white border border-green-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
-                                                    ✓ Approve as Paid
-                                                </button>
-                                                <button onClick={() => handleConfirmBooking(booking._id, 'not_paid')} className="flex-1 min-w-[120px] bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
-                                                    ✓ Approve Undecided
-                                                </button>
-                                                <button onClick={() => handleCancelBooking(booking._id)} className="w-[80px] bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 text-xs font-bold py-2.5 px-3 rounded-lg transition">
-                                                    ✕ Reject
+                                                <button onClick={() => handleCancelBooking(booking._id)} className="flex-1 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 text-xs font-bold py-2.5 px-3 rounded-lg transition">
+                                                    ✕ Reject Booking Request
                                                 </button>
                                             </div>
                                         )}
